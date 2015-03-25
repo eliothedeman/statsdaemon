@@ -17,6 +17,9 @@ Installing
 ```bash
 go get github.com/eliothedeman/statsdaemon
 ```
+
+You can make a debian package by calling the mkdeb.sh script. This requires the use of [fpm](https://github.com/jordansissel/fpm)
+
 Config File Format
 ====================
 
