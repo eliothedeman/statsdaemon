@@ -15,7 +15,7 @@ func LoadBackend(name string, b Backend) {
 }
 
 type Backend interface {
-	Submit(map[string]*metric.Metric, time.Time) error
+	Submit([]metric.Metric, time.Time) error
 	Init(interface{}) error
 	ConfigStruct() interface{}
 }
