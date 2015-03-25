@@ -67,6 +67,10 @@ func chanToSlice(c chan float64) []float64 {
 }
 
 func (t *Timer) Value() interface{} {
+	return t.MapValue()
+}
+
+func (t *Timer) MapValue() map[string]float64 {
 	// reduce to []float64
 	arr := chanToSlice(t.val)
 

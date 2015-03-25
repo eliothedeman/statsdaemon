@@ -52,21 +52,35 @@ func (s *SQS) Submit(all []metric.Metric, now time.Time) error {
 	}
 
 	for _, m := range all {
-		template.Plugin = m.Name()
-		template.Value = m.Value()
-		b, err := json.Marshal(template)
-		if err != nil {
-			return err
-		}
-		encoded := base64.StdEncoding.EncodeToString(b)
-		for _, q := range s.queues {
-			_, err = q.SendMessage(encoded)
-			if err != nil {
-				return err
+
+		switch m := m.(type) {
+		default:
+		case *metric.Timer:
+			val := m.MapValue()
+			for k, v := range val {
+				template.Plugin = m.Name() + k
+				template.Value = v
+				for _, q := range s.queues {
+					err = sendMessage(template, q)
+					if err != nil {
+						return err
+					}
+				}
 			}
 		}
 	}
 	return nil
+}
+
+func sendMessage(m *SQSMetric, q *sqs_client.Queue) error {
+	b, err := json.Marshal(m)
+	if err != nil {
+		return err
+	}
+
+	encoded := base64.StdEncoding.EncodeToString(b)
+	_, err = q.SendMessage(encoded)
+	return err
 }
 
 func (s *SQS) Init(i interface{}) error {
