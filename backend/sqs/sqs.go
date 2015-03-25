@@ -1,12 +1,29 @@
 package sqs
 
 import (
+	"encoding/base64"
+	"encoding/json"
+	"os"
 	"time"
 
 	sqs_client "github.com/AdRoll/goamz/sqs"
+	"github.com/eliothedeman/statsdaemon/backend"
 	"github.com/eliothedeman/statsdaemon/config"
 	"github.com/eliothedeman/statsdaemon/metric"
 )
+
+func init() {
+	backend.LoadBackend("sqs", &SQS{})
+}
+
+type SQSMetric struct {
+	Host   string      `json:"host"`
+	Plugin string      `json:"string"`
+	Type   string      `json:"type"`
+	Kind   string      `json:"kind"`
+	Value  interface{} `json:"value"`
+	Time   int64       `json:"time"`
+}
 
 // a backend which pushed data to any of a list of queues
 type SQS struct {
@@ -23,7 +40,32 @@ type SQSConfig struct {
 	Queues    []string `json:"queues"`
 }
 
-func (s *SQS) Submit(all []metric.Metric, deadline time.Time) error {
+func (s *SQS) Submit(all []metric.Metric, now time.Time) error {
+	host, err := os.Hostname()
+	if err != nil {
+		return err
+	}
+	template := &SQSMetric{
+		Host: host,
+		Kind: "metric",
+		Time: now.Unix(),
+	}
+
+	for _, m := range all {
+		template.Plugin = m.Name()
+		template.Value = m.Value()
+		b, err := json.Marshal(template)
+		if err != nil {
+			return err
+		}
+		encoded := base64.StdEncoding.EncodeToString(b)
+		for _, q := range s.queues {
+			_, err = q.SendMessage(encoded)
+			if err != nil {
+				return err
+			}
+		}
+	}
 	return nil
 }
 

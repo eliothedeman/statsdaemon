@@ -16,6 +16,7 @@ import (
 
 	"github.com/eliothedeman/statsdaemon/backend"
 	_ "github.com/eliothedeman/statsdaemon/backend/console"
+	_ "github.com/eliothedeman/statsdaemon/backend/sqs"
 	"github.com/eliothedeman/statsdaemon/config"
 	"github.com/eliothedeman/statsdaemon/metric"
 )
