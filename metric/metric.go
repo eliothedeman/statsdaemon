@@ -35,7 +35,7 @@ func (c *Counter) Value() interface{} {
 }
 
 func (c *Counter) Update(i interface{}, rate float32) {
-	n := i.(int)
+	n := i.(int64)
 	atomic.AddInt64(&c.val, int64(float64(n)*float64(1/rate)))
 }
 

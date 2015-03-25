@@ -115,7 +115,7 @@ func packetHandler(s *Packet) {
 	if !ok {
 		counters[RECIEVED_PACKET_BUCKET] = metric.NewCounter(RECIEVED_PACKET_BUCKET)
 	}
-	counters[RECIEVED_PACKET_BUCKET].Update(1, 1)
+	counters[RECIEVED_PACKET_BUCKET].Update(int64(1), 1)
 
 	var metricToUpdate metric.Metric
 	switch s.Modifier {
