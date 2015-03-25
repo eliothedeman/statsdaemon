@@ -77,7 +77,9 @@ func LoadConfigFromFile(name string) (*Config, error) {
 		log.Fatal(err)
 	}
 
-	c.FlushInterval, err = time.ParseDuration(c.FlushIntervalString)
+	if c.FlushIntervalString != "" {
+		c.FlushInterval, err = time.ParseDuration(c.FlushIntervalString)
+	}
 	if c.Debug {
 		log.SetFlags(log.Llongfile)
 	}
