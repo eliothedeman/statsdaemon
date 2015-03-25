@@ -11,8 +11,6 @@ Supports
 * Sets
 * Custome backends
 
-[![Build Status](https://secure.travis-ci.org/bitly/statsdaemon.png)](http://travis-ci.org/bitly/statsdaemon)
-
 Installing
 ==========
 
