@@ -9,7 +9,7 @@ Supports
 * Counters (positive and negative with optional sampling)
 * Gauges (including relative operations)
 * Sets
-* Custome backends
+* Custom backends
 
 Installing
 ==========
