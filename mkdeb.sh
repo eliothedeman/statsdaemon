@@ -1,5 +1,5 @@
 # build for debian based systems
-go build -o statsd
+go build -a -o statsd
 mkdir -p opt/statsd
 mkdir -p etc/statsd
 mv statsd opt/statsd/statsd
