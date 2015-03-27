@@ -2,3 +2,4 @@ statsdaemon
 dist
 conf.json
 statsd
+*.deb
