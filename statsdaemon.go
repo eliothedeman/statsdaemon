@@ -42,12 +42,6 @@ type GaugeData struct {
 	Value    uint64
 }
 
-type Uint64Slice []uint64
-
-func (s Uint64Slice) Len() int           { return len(s) }
-func (s Uint64Slice) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
-func (s Uint64Slice) Less(i, j int) bool { return s[i] < s[j] }
-
 type Percentiles []*Percentile
 type Percentile struct {
 	float float64

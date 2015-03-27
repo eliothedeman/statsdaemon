@@ -1,7 +1,6 @@
 package sqs
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"os"
 	"time"
@@ -17,12 +16,13 @@ func init() {
 }
 
 type SQSMetric struct {
-	Host   string      `json:"host"`
-	Plugin string      `json:"string"`
-	Type   string      `json:"type"`
-	Kind   string      `json:"kind"`
-	Value  interface{} `json:"value"`
-	Time   int64       `json:"time"`
+	Host    string      `json:"host"`
+	Plugin  string      `json:"plugin"`
+	SubType string      `json:"subtype"`
+	Type    string      `json:"type"`
+	Kind    string      `json:"kind"`
+	Value   interface{} `json:"value"`
+	Time    int64       `json:"time"`
 }
 
 // a backend which pushed data to any of a list of queues
@@ -78,8 +78,7 @@ func sendMessage(m *SQSMetric, q *sqs_client.Queue) error {
 		return err
 	}
 
-	encoded := base64.StdEncoding.EncodeToString(b)
-	_, err = q.SendMessage(encoded)
+	_, err = q.SendMessage(string(b))
 	return err
 }
 
