@@ -44,6 +44,10 @@ func ExpireTime(h *holder, c *Container) bool {
 }
 
 func ExpireOrphans(h *holder, c *Container) bool {
+	if h.m.Name() == "packets_recieved" {
+		return false
+
+	}
 	return h.orphaned
 }
 

@@ -101,7 +101,7 @@ func monitor(conf *config.Config) {
 }
 
 func packetHandler(s *Packet) {
-	metrics.Update(RECIEVED_PACKET_BUCKET, 1, 1)
+	metrics.Update(RECIEVED_PACKET_BUCKET, int64(1), 1)
 
 	metricToUpdate := metrics.Get(s.Bucket)
 	if metricToUpdate == nil {
