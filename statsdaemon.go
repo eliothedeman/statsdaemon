@@ -71,17 +71,13 @@ var (
 func init() {
 	flag.Var(&percentThreshold, "percent-threshold",
 		"percentile calculation for timers (0-100, may be given multiple times)")
+	metrics.Add(RECIEVED_PACKET_BUCKET, metric.NewCounter(RECIEVED_PACKET_BUCKET))
 }
 
 var (
-	In              = make(chan *Packet, MAX_UNPROCESSED_PACKETS)
-	counters        = make(map[string]metric.Metric)
-	gauges          = make(map[string]metric.Metric)
-	trackedGauges   = make(map[string]metric.Metric)
-	timers          = make(map[string]metric.Metric)
-	countInactivity = make(map[string]int64)
-	sets            = make(map[string]metric.Metric)
-	backends        []backend.Backend
+	In       = make(chan *Packet, MAX_UNPROCESSED_PACKETS)
+	metrics  = metric.NewContainer(metric.ExpireOrphans)
+	backends []backend.Backend
 )
 
 func monitor(conf *config.Config) {
@@ -105,38 +101,21 @@ func monitor(conf *config.Config) {
 }
 
 func packetHandler(s *Packet) {
-	_, ok := counters[RECIEVED_PACKET_BUCKET]
-	if !ok {
-		counters[RECIEVED_PACKET_BUCKET] = metric.NewCounter(RECIEVED_PACKET_BUCKET)
-	}
-	counters[RECIEVED_PACKET_BUCKET].Update(int64(1), 1)
+	metrics.Update(RECIEVED_PACKET_BUCKET, 1, 1)
 
-	var metricToUpdate metric.Metric
-	switch s.Modifier {
-	case "ms":
-		_, ok := timers[s.Bucket]
-		if !ok {
-			timers[s.Bucket] = metric.NewTimer(s.Bucket)
+	metricToUpdate := metrics.Get(s.Bucket)
+	if metricToUpdate == nil {
+		switch s.Modifier {
+		case "ms":
+			metricToUpdate = metric.NewTimer(s.Bucket)
+		case "g":
+			metricToUpdate = metric.NewGauge(s.Bucket)
+		case "c":
+			metricToUpdate = metric.NewCounter(s.Bucket)
+		case "s":
+			metricToUpdate = metric.NewSet(s.Bucket)
 		}
-		metricToUpdate = timers[s.Bucket]
-	case "g":
-		if _, ok := gauges[s.Bucket]; !ok {
-			gauges[s.Bucket] = metric.NewGauge(s.Bucket)
-		}
-		metricToUpdate = gauges[s.Bucket]
-	case "c":
-		_, ok := counters[s.Bucket]
-		if !ok {
-			counters[s.Bucket] = metric.NewCounter(s.Bucket)
-		}
-
-		metricToUpdate = counters[s.Bucket]
-	case "s":
-		_, ok := sets[s.Bucket]
-		if !ok {
-			sets[s.Bucket] = metric.NewSet(s.Bucket)
-		}
-		metricToUpdate = sets[s.Bucket]
+		metrics.Add(s.Bucket, metricToUpdate)
 	}
 	metricToUpdate.Update(s.Value, s.Sampling)
 }
@@ -154,20 +133,8 @@ func submit(deadline time.Time) error {
 }
 
 func processMetrics() []metric.Metric {
-	all := make([]metric.Metric, 0, (len(counters) + len(gauges) + len(timers) + len(sets)))
-	for _, v := range counters {
-		all = append(all, v)
-	}
-	for _, v := range gauges {
-		all = append(all, v)
-	}
-	for _, v := range timers {
-		all = append(all, v)
-	}
-	for _, v := range sets {
-		all = append(all, v)
-	}
-	return all
+	metrics.Reap()
+	return metrics.List()
 }
 
 func parseMessage(data []byte, conf *config.Config) []*Packet {
