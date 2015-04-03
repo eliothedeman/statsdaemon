@@ -1,7 +1,7 @@
 package console
 
 import (
-	"log"
+	"fmt"
 	"time"
 
 	"github.com/eliothedeman/statsdaemon/backend"
@@ -17,7 +17,7 @@ type Console struct {
 
 func (c *Console) Submit(all []metric.Metric, deadline time.Time) error {
 	for i := range all {
-		log.Printf("console - metric: %s value: %v", all[i].Name(), all[i].Value())
+		fmt.Printf("%+v\n", all[i])
 	}
 	return nil
 }
