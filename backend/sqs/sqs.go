@@ -2,6 +2,7 @@ package sqs
 
 import (
 	"encoding/json"
+	"log"
 	"os"
 	"time"
 
@@ -27,9 +28,11 @@ type SQSMetric struct {
 
 // a backend which pushed data to any of a list of queues
 type SQS struct {
-	client *sqs_client.SQS
-	queues []*sqs_client.Queue
-	conf   *SQSConfig
+	client   *sqs_client.SQS
+	queues   []*sqs_client.Queue
+	conf     *SQSConfig
+	messages []sqs_client.Message
+	count    int
 }
 
 // SQSConfig provides config information for the SQS provider
@@ -61,7 +64,7 @@ func (s *SQS) Submit(all []metric.Metric, now time.Time) error {
 				template.Plugin = m.Name() + k
 				template.Value = v
 				for _, q := range s.queues {
-					err = sendMessage(template, q)
+					err = s.sendMessage(template, q)
 					if err != nil {
 						return err
 					}
@@ -72,13 +75,24 @@ func (s *SQS) Submit(all []metric.Metric, now time.Time) error {
 	return nil
 }
 
-func sendMessage(m *SQSMetric, q *sqs_client.Queue) error {
+func (s *SQS) sendMessage(m *SQSMetric, q *sqs_client.Queue) error {
 	b, err := json.Marshal(m)
 	if err != nil {
 		return err
 	}
 
-	_, err = q.SendMessage(string(b))
+	if s.count != len(s.messages) {
+		log.Println("appending")
+		m := sqs_client.Message{}
+		m.Body = string(b)
+		s.messages[s.count] = m
+		s.count += 1
+	} else {
+		s.count = 0
+		log.Println("sending")
+		_, err = q.SendMessageBatch(s.messages)
+	}
+
 	return err
 }
 
@@ -87,6 +101,8 @@ func (s *SQS) Init(i interface{}) error {
 	if !ok {
 		return config.WRONG_CONFIG_TYPE
 	}
+
+	s.messages = make([]sqs_client.Message, 10)
 
 	client, err := sqs_client.NewFrom(conf.AccessKey, conf.SecretKey, conf.Region)
 	if err != nil {

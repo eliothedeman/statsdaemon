@@ -37,10 +37,10 @@ func KeepAll(h *holder, c *Container) bool {
 	return false
 }
 
-func ExpireTime(h *holder, c *Container) bool {
-	// expire things that are older than thirty minutes
-	// TODO: (eliothedeman) this should be configurable
-	return h.t.After(time.Now().Add(time.Minute * 30))
+func ExpireTime(d time.Duration) ReapStrategy {
+	return func(h *holder, c *Container) bool {
+		return h.t.After(time.Now().Add(d))
+	}
 }
 
 func ExpireOrphans(h *holder, c *Container) bool {
