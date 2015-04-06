@@ -76,7 +76,7 @@ func init() {
 
 var (
 	In       = make(chan *Packet, MAX_UNPROCESSED_PACKETS)
-	metrics  = metric.NewContainer(metric.ExpireTime(time.Minute * 30))
+	metrics  = metric.NewContainer(metric.ExpireTime(time.Minute * 1))
 	backends []backend.Backend
 )
 
@@ -92,9 +92,11 @@ func monitor(conf *config.Config) {
 			return
 		case <-ticker.C:
 			go func() {
+				start := time.Now()
 				if err := submit(time.Now().Add(conf.FlushInterval)); err != nil {
 					log.Printf("ERROR: %s", err)
 				}
+				log.Printf("submitting took %s", time.Now().Sub(start))
 			}()
 		case s := <-In:
 			packetHandler(s)

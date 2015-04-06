@@ -2,8 +2,8 @@ package sqs
 
 import (
 	"encoding/json"
-	"log"
 	"os"
+	"strings"
 	"time"
 
 	sqs_client "github.com/AdRoll/goamz/sqs"
@@ -58,10 +58,24 @@ func (s *SQS) Submit(all []metric.Metric, now time.Time) error {
 
 		switch m := m.(type) {
 		default:
+			template.Plugin = m.Name()
+			template.Value = m.Value()
+			for _, q := range s.queues {
+				err = s.sendMessage(template, q)
+				if err != nil {
+					return err
+				}
+			}
+
 		case *metric.Timer:
 			val := m.MapValue()
 			for k, v := range val {
-				template.Plugin = m.Name() + k
+				template.Plugin = m.Name()
+				if strings.Contains(m.Name(), "?") {
+					template.Plugin = m.Name() + "&timer_kind=" + k
+				} else {
+					template.Plugin = m.Name() + "?timer_kind=" + k
+				}
 				template.Value = v
 				for _, q := range s.queues {
 					err = s.sendMessage(template, q)
@@ -82,14 +96,12 @@ func (s *SQS) sendMessage(m *SQSMetric, q *sqs_client.Queue) error {
 	}
 
 	if s.count != len(s.messages) {
-		log.Println("appending")
 		m := sqs_client.Message{}
 		m.Body = string(b)
 		s.messages[s.count] = m
 		s.count += 1
 	} else {
 		s.count = 0
-		log.Println("sending")
 		_, err = q.SendMessageBatch(s.messages)
 	}
 

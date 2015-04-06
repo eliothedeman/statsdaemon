@@ -39,7 +39,10 @@ func KeepAll(h *holder, c *Container) bool {
 
 func ExpireTime(d time.Duration) ReapStrategy {
 	return func(h *holder, c *Container) bool {
-		return h.t.After(time.Now().Add(d))
+		if h.m.Name() == "packets_recieved" {
+			return false
+		}
+		return h.t.Before(time.Now().Add(-d))
 	}
 }
 
