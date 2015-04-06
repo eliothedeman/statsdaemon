@@ -76,7 +76,7 @@ func init() {
 
 var (
 	In       = make(chan *Packet, MAX_UNPROCESSED_PACKETS)
-	metrics  = metric.NewContainer(metric.ExpireTime(time.Minute * 1))
+	metrics  = metric.NewContainer(metric.ExpireTime(time.Minute * 30))
 	backends []backend.Backend
 )
 
