@@ -1,0 +1,11 @@
+{
+	"flush_interval": "5m",
+	"backends": {
+		"sqs": {
+			"access_key": "",
+			"secret_key": "",
+			"region": ",
+			"queues": []
+		}
+	}
+}
