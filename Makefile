@@ -17,6 +17,10 @@ start:
 	cwd=$(pwd)
 	docker run -v $(CWD)/conf.json:/etc/statsd/conf.json -p 8125:8125/udp --name $(IMAGE_NAME) -d $(IMAGE_NAME)
 
+start-no-d: 
+	cwd=$(pwd)
+	docker run -v $(CWD)/conf.json:/etc/statsd/conf.json -p 8125:8125/udp --name $(IMAGE_NAME) $(IMAGE_NAME)
+
 kill:
 	docker kill $(IMAGE_NAME)
 
