@@ -2,8 +2,7 @@ FROM golang:1.4
 
 ENV DEBIAN_FRONTEND noninteractive
 
-ADD conf.json /etc/statsd/conf.json
-
+ADD conf.json.example /etc/statsd/conf.json
 # build the command
 RUN go get -u github.com/eliothedeman/statsdaemon
 RUN go build -o /go/bin/statsd github.com/eliothedeman/statsdaemon 
