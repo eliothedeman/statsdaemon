@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	sqs_client "github.com/AdRoll/goamz/sqs"
+	sqs_client "github.com/eliothedeman/goamz/sqs"
 	"github.com/eliothedeman/statsdaemon/backend"
 	"github.com/eliothedeman/statsdaemon/config"
 	"github.com/eliothedeman/statsdaemon/metric"
